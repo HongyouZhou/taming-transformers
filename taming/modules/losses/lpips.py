@@ -30,11 +30,13 @@ class LPIPS(nn.Module):
         return model
 
     def forward(self, input, target):
-        in0_input, in1_input = normalize_tensor(input), normalize_tensor(target) #(self.scaling_layer(input), self.scaling_layer(target))
+        #in0_input, in1_input = normalize_tensor(input), normalize_tensor(target) #(self.scaling_layer(input), self.scaling_layer(target))
+        in0_input, in1_input = input, target
         self.net = self.net.to(input.device)
         outs0, outs1 = self.net(in0_input), self.net(in1_input)
-        feats0, feats1 = normalize_tensor(outs0), normalize_tensor(outs1)
-        diffs = (feats0 - feats1) ** 2
+        #feats0, feats1 = normalize_tensor(outs0), normalize_tensor(outs1)
+        #diffs = (feats0 - feats1) ** 2
+        diffs = (outs0 - outs1) ** 2
         res = spatial_average_3d(diffs, keepdim=True)
         val = res
         
@@ -132,7 +134,7 @@ class vgg16(torch.nn.Module):
         return out
 
 
-def normalize_tensor(x,eps=1e-10):
+def normalize_tensor(x,eps=1e-5):
     norm_factor = torch.sqrt(torch.sum(x**2,dim=1,keepdim=True))
     return x/(norm_factor+eps)
 
